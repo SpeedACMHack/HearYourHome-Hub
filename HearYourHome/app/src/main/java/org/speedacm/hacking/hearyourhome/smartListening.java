@@ -3,6 +3,7 @@ package org.speedacm.hacking.hearyourhome;
 import android.app.Application;
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -42,8 +43,11 @@ public class smartListening {
     }
 
     void killTone(String id){
-        MediaPlayer mediaPlayer = MediaPlayer.create(listen.getApplicationContext(),Integer.parseInt(id));
-        Log.d("Playing Tone","Playing Tone");
+        //MediaPlayer mediaPlayer = MediaPlayer.create(listen.getApplicationContext(),Integer.parseInt(id));
+        if(id.equals("131994")) {
+            MediaPlayer mediaPlayer = MediaPlayer.create(listen.getApplicationContext(), R.raw.media_131994);
+            Log.d("Playing Tone","Playing Tone");
+        }
     }
 
 }
