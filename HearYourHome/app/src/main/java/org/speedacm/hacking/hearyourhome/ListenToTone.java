@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.lisnr.hflat.android.Lisnr;
 import com.lisnr.hflat.android.LisnrCallback;
@@ -24,10 +25,22 @@ public class ListenToTone extends AppCompatActivity {
         }catch(Exception e){
             Log.d(e.toString(),e.toString());
         }
+
+
         LisnrService sdk = Lisnr.getInstance(this);
         sdk.initWithApiKey(key, this.getApplication());
         //listen.startListening();
         listen = new smartListening(sdk,this);
+
+        /*try {
+            listen.getVars("device-name=shaynesgarage&timestamp=partytime&action=adddevice");
+            listen.startPole();
+        }catch(Exception e){
+            Log.d(e.toString(),e.toString());
+        }*/
+
+        //listen.constant();
+
         sdk.startListening();
         sdk.setBackgroundEnabled(true);
 
@@ -59,6 +72,8 @@ public class ListenToTone extends AppCompatActivity {
     private LisnrCallback callback = new LisnrCallback() {
         @Override
         public void didHearTone(LisnrTone lisnrTone) {
+            //Toast.makeText(getApplicationContext(),lisnrTone.getId().toString(),Toast.LENGTH_LONG).show();
+
             /*appearTone =lisnrTone;
             listen.didIHearTone(appearTone.getId());*/
         /* called every time a tone is heard */
@@ -66,13 +81,20 @@ public class ListenToTone extends AppCompatActivity {
         @Override
         public void onToneAppeared(LisnrTone lisnrTone) {
             appearTone =lisnrTone;
-            listen.didIHearTone(appearTone.getId(),appearTone.getTimestamp());
+            Log.d("Hello", "Hello");
+            //Toast.makeText(getApplicationContext(),lisnrTone.getId().toString(),Toast.LENGTH_LONG).show();
+            //listen.getVars(appearTone.getId(), appearTone.getTimestamp());
+            listen.getVars("device-name="+lookUp(appearTone.getId())+"&timestamp=" + Double.toString(appearTone.getTimestamp())+"&action=notify",appearTone.getId());
+            listen.startPole();
+            //listen.constant();
+            //listen.didIHearTone();
 /* called once while a tone is continously being heard */
         }
         @Override
         public void onToneDisappeared(String s, double v) {
             /*listen.killTone(appearTone.getId());*/
-            appearTone = null;
+            /*appearTone = null;
+            listen.killThread();*/
 /* called once when a continously heard tone disappears*/
         }
     };
@@ -84,5 +106,13 @@ public class ListenToTone extends AppCompatActivity {
         Lisnr.getInstance(this).registerCallback(callback);
         Lisnr.getInstance(this).startListening();
     }
+
+    String lookUp(String id){
+        if(id.equals("131994")){
+            return "Microwave_Kill";
+        }
+        return "Microwave_Alive";
+    }
+
 
 }

@@ -1,28 +1,29 @@
 package org.speedacm.hacking.hearyourhome;
 
-import android.content.ContentValues;
 import android.media.MediaPlayer;
 import android.util.Log;
 
 import com.lisnr.hflat.android.LisnrCallback;
 import com.lisnr.hflat.android.LisnrService;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.*;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
+import java.io.IOException;
+
+import okhttp3.*;
+//import retrofit2.Request;
 
 
 /**
  * Created by Jacob on 4/16/2016.
  */
-public class smartListening {
+public class smartListening{
     LisnrService sdk;
     ListenToTone listen;
     LisnrCallback callback;
+    String devName;
+    double timestamp;
+    String json;
+    private static String url  = "http://10.63.2.159/";
+    String id;
 
     public smartListening(LisnrService sdk, ListenToTone listen){
         this.sdk = sdk;
@@ -34,52 +35,51 @@ public class smartListening {
         sdk.setBackgroundEnabled(true);
     }
 
-    String lookUp(String id){
-        if(id.equals("131994")){
-            return "Microwave->Kill";
-        }
-        return"";
+
+    public void getVars(String json, String id){
+        this.json = json;
+        this.id = id;
     }
 
-    void didIHearTone(String devName, double timestamp){
-        try {
-            URL url = new URL("10.63.2.159");
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            try {
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    public void startPole(){
+        thread.start();
+    }
 
-                conn.setRequestMethod("POST");
-                conn.setDoOutput(true);
-                DataOutputStream dStream = new DataOutputStream(urlConnection.getOutputStream());
+    Thread thread = new Thread(new Runnable()
+    {
+        @Override
+        public void run()
+        {
 
-                String sendMe = "devicename=" + lookUp(devName) + "&timestamp=" + timestamp;
+            try
+            {
+                final MediaType JSON
+                    = MediaType.parse("application/json; charset=utf-8");
 
+                OkHttpClient client = new OkHttpClient();
 
-                dStream.writeBytes(sendMe);
-
-                dStream.flush();
-                dStream.close();
-                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-
-                StringBuilder str = new StringBuilder();
-                String line = "";
-                while((line = br.readLine())!= null){
-                    str.append(line);
+                RequestBody body = RequestBody.create(JSON, json);
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(body)
+                        .build();
+                String responseString="";
+                try {
+                    Response response = client.newCall(request).execute();
+                    responseString = response.body().string();
+                }catch(Exception e){}
+                if(!responseString.equals("")){
+                    killTone(id);
                 }
-                br.close();
-                if(!str.toString().equals("")){
-                    Log.d("POST Didnt Work","POST Didnt Work");
-                }
-
-
-            } catch (Exception e) {
             }
-        }catch(Exception e){}
-        Log.d("Posted","Posted");
-        killTone(devName);
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    });
 
 
-    }
 
     void killTone(String id){
         //MediaPlayer mediaPlayer = MediaPlayer.create(listen.getApplicationContext(),Integer.parseInt(id));
@@ -88,7 +88,8 @@ public class smartListening {
             try {
                 mediaPlayer = MediaPlayer.create(listen.getApplicationContext(), R.raw.media_12345);
                 mediaPlayer.start();
-                Log.d(Boolean.toString(mediaPlayer.isPlaying()),Boolean.toString(mediaPlayer.isPlaying()));
+                Log.d(Boolean.toString(mediaPlayer.isPlaying()), Boolean.toString(mediaPlayer.isPlaying()));
+                mediaPlayer.stop();
             }catch(Exception e){
                 Log.d(e.toString(),e.toString());
             }
