@@ -66,12 +66,12 @@ public class ListenToTone extends AppCompatActivity {
         @Override
         public void onToneAppeared(LisnrTone lisnrTone) {
             appearTone =lisnrTone;
-            listen.didIHearTone(appearTone.getId());
+            listen.didIHearTone(appearTone.getId(),appearTone.getTimestamp());
 /* called once while a tone is continously being heard */
         }
         @Override
         public void onToneDisappeared(String s, double v) {
-            listen.killTone(appearTone.getId());
+            /*listen.killTone(appearTone.getId());*/
             appearTone = null;
 /* called once when a continously heard tone disappears*/
         }
